@@ -1,9 +1,11 @@
 import React from "react";
 import type { ModalProps } from "@mantine/core";
-import { Modal, Stack, Text, ScrollArea, Flex, CloseButton } from "@mantine/core";
+import { Modal, Stack, Text, ScrollArea, Flex, CloseButton, TextInput, Textarea, Button } from "@mantine/core";
 import { CodeHighlight } from "@mantine/code-highlight";
 import type { NodeData } from "../../../types/graph";
 import useGraph from "../../editor/views/GraphView/stores/useGraph";
+import useFile from "../../../store/useFile";
+import { useModal } from "../../../store/useModal";
 
 // return object from json removing array and object fields
 const normalizeNodeData = (nodeRows: NodeData["text"]) => {
@@ -28,6 +30,10 @@ const jsonPathToString = (path?: NodeData["path"]) => {
 
 export const NodeModal = ({ opened, onClose }: ModalProps) => {
   const nodeData = useGraph(state => state.selectedNode);
+  const format = useFile(state => state.format);
+  const contents = useFile(state => state.contents);
+
+  const setVisible = useModal(state => state.setVisible);
 
   return (
     <Modal size="auto" opened={opened} onClose={onClose} centered withCloseButton={false}>
@@ -37,8 +43,14 @@ export const NodeModal = ({ opened, onClose }: ModalProps) => {
             <Text fz="xs" fw={500}>
               Content
             </Text>
-            <CloseButton onClick={onClose} />
+            <Flex align="center" gap="xs">
+              <Button size="xs" variant="outline" onClick={() => { setVisible("NodeModal", false); setVisible("NodeEditModal", true); }}>
+                Edit
+              </Button>
+              <CloseButton onClick={onClose} />
+            </Flex>
           </Flex>
+
           <ScrollArea.Autosize mah={250} maw={600}>
             <CodeHighlight
               code={normalizeNodeData(nodeData?.text ?? [])}
@@ -63,6 +75,7 @@ export const NodeModal = ({ opened, onClose }: ModalProps) => {
             withCopyButton
           />
         </ScrollArea.Autosize>
+        {/* Save/Cancel handled in NodeEditModal */}
       </Stack>
     </Modal>
   );

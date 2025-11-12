@@ -1,5 +1,5 @@
 import React from "react";
-import { ActionIcon, Button, Flex, Menu, Text } from "@mantine/core";
+import { ActionIcon, Button, Flex, Menu, Text, Modal, Textarea, Group } from "@mantine/core";
 import { useHotkeys } from "@mantine/hooks";
 import styled from "styled-components";
 import { event as gaEvent } from "nextjs-google-analytics";
@@ -10,6 +10,7 @@ import useConfig from "../../../../store/useConfig";
 import { useModal } from "../../../../store/useModal";
 import type { LayoutDirection } from "../../../../types/graph";
 import useGraph from "./stores/useGraph";
+import useFile from "../../../../store/useFile";
 
 const StyledFlowIcon = styled(TiFlowMerge)<{ rotate: number }>`
   transform: rotate(${({ rotate }) => `${rotate}deg`});
@@ -77,6 +78,8 @@ export const OptionsMenu = () => {
         zIndex: 100,
       }}
     >
+      {/* Edit JSON modal & trigger */}
+      <EditJson />
       <Menu withArrow>
         <Menu.Target>
           <ActionIcon aria-label="actions" size="lg" color="gray" variant="light">
@@ -159,5 +162,62 @@ export const OptionsMenu = () => {
         </Menu.Dropdown>
       </Menu>
     </Flex>
+  );
+};
+
+const EditJson = () => {
+  const contents = useFile(state => state.contents);
+  const setContents = useFile(state => state.setContents);
+  const [open, setOpen] = React.useState(false);
+  const [value, setValue] = React.useState(contents);
+
+  React.useEffect(() => {
+    // keep local editor synced when not open
+    if (!open) setValue(contents);
+  }, [contents, open]);
+
+  const openEditor = () => {
+    setValue(contents);
+    setOpen(true);
+  };
+
+  const onSave = async () => {
+    await setContents({ contents: value });
+    setOpen(false);
+  };
+
+  const onCancel = () => {
+    setValue(contents);
+    setOpen(false);
+  };
+
+  return (
+    <>
+      <ActionIcon aria-label="edit-json" size="lg" color="gray" variant="light" onClick={openEditor}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z" fill="currentColor" />
+          <path d="M20.71 7.04a1.003 1.003 0 0 0 0-1.41l-2.34-2.34a1.003 1.003 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="currentColor" />
+        </svg>
+      </ActionIcon>
+
+      <Modal opened={open} onClose={onCancel} title="Edit JSON" size="xl">
+        <Textarea
+          minRows={12}
+          value={value}
+          onChange={e => setValue(e.currentTarget.value)}
+          autosize
+          styles={{ input: { fontFamily: "monospace" } }}
+        />
+
+        <Group position="right" mt="md">
+          <Button variant="default" onClick={onCancel} size="sm">
+            Cancel
+          </Button>
+          <Button onClick={onSave} size="sm">
+            Save
+          </Button>
+        </Group>
+      </Modal>
+    </>
   );
 };

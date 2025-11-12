@@ -43,9 +43,9 @@ const Node = ({ node, x, y }: CustomNodeProps) => (
     y={0}
     $isObject
   >
-    {node.text.map((row, index) => (
-      <Row key={`${node.id}-${index}`} row={row} x={x} y={y} index={index} />
-    ))}
+      {node.text.map((row, index) => (
+        <Row key={`${node.id}-${index}`} row={row} x={x} y={y} index={index} />
+      ))}
   </Styled.StyledForeignObject>
 );
 

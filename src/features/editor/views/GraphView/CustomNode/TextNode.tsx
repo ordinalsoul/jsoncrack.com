@@ -32,6 +32,8 @@ const Node = ({ node, x, y }: CustomNodeProps) => {
   const isImage = imagePreviewEnabled && isContentImage(JSON.stringify(text[0].value));
   const value = text[0].value;
 
+  
+
   return (
     <Styled.StyledForeignObject
       data-id={`node-${node.id}`}

@@ -50,6 +50,7 @@ const useGraph = create<Graph & GraphActions>((set, get) => ({
   clearGraph: () => set({ nodes: [], edges: [], loading: false }),
   setSelectedNode: nodeData => set({ selectedNode: nodeData }),
   setGraph: (data, options) => {
+    const prevSelected = get().selectedNode;
     const { nodes, edges } = parser(data ?? useJson.getState().json);
 
     if (nodes.length > SUPPORTED_LIMIT) {
@@ -60,10 +61,22 @@ const useGraph = create<Graph & GraphActions>((set, get) => ({
       });
     }
 
+    // try to re-select the corresponding node in the newly parsed nodes
+    let newSelected = null as NodeData | null;
+    if (prevSelected && prevSelected.path) {
+      try {
+        const prevPathStr = JSON.stringify(prevSelected.path);
+        newSelected = nodes.find(n => JSON.stringify(n.path) === prevPathStr) ?? null;
+      } catch (e) {
+        newSelected = null;
+      }
+    }
+
     set({
       nodes,
       edges,
       aboveSupportedLimit: false,
+      selectedNode: newSelected,
       ...options,
     });
   },
